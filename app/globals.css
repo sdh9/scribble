@@ -100,3 +100,38 @@
 html, body {
   background-color: #1c1c1c;
 }
+
+.ck-focused {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ck.ck-editor__editable_inline {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ck-content {
+  font-size: .875rem;
+  line-height: 1.25rem;
+}
+
+.ck-content > p{
+  margin-bottom: 16px;
+}
+
+.ck-content ol, ul {
+  margin-bottom: 14px;
+  margin-left: 18px;
+}
+
+.ck-content li {
+  margin-bottom: 11px;
+}
+
+.ck-content a {
+  text-decoration: underline;
+  color: #e2a727
+}
