@@ -55,7 +55,7 @@ AS $function$
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.update_note(uuid_arg uuid, session_arg uuid, title_arg text, emoji_arg text, content_arg text)
+CREATE OR REPLACE FUNCTION public.update_note(uuid_arg uuid, session_arg uuid, title_arg text, emoji_arg text, content_arg text, public_arg boolean)
  RETURNS void
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -64,7 +64,8 @@ BEGIN
     UPDATE public.notes
     SET title = title_arg, 
         emoji = emoji_arg, 
-        content = content_arg
+        content = content_arg,
+        public = public_arg
     WHERE id = uuid_arg AND session_id = session_arg;
 END;
 $function$
@@ -104,6 +105,19 @@ AS $function$
 BEGIN
     UPDATE public.notes
     SET title = title_arg
+    WHERE id = uuid_arg AND session_id = session_arg;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.update_note_public(uuid_arg uuid, session_arg uuid, public_arg boolean)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+    UPDATE public.notes
+    SET public = public_arg
     WHERE id = uuid_arg AND session_id = session_arg;
 END;
 $function$

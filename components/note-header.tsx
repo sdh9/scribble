@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { format, parseISO } from "date-fns";
 import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
+import { SessionNotesContext } from "@/app/session-notes";
+
+
 import Picker from "@emoji-mart/react";
 import {
   Tooltip,
@@ -11,24 +15,32 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { useMobileDetect } from "./mobile-detector";
-import { ChevronLeft, Lock } from "lucide-react";
+import { ChevronLeft, Lock, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function NoteHeader({
+  sessionId,
   note,
   saveNote,
   canEdit,
 }: {
+  sessionId: string
   note: any;
   saveNote: (updates: Partial<typeof note>) => void;
   canEdit: boolean;
-}) {
+  }) {
+  const supabase = createClient();
+  const router = useRouter();
   const isMobile = useMobileDetect();
   const pathname = usePathname();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [formattedDate, setFormattedDate] = useState("");
+  const { refreshSessionNotes } = useContext(SessionNotesContext);
+  const [isPublic, setPublic] = useState(note.public)
 
   useEffect(() => {
     setFormattedDate(
@@ -46,6 +58,31 @@ export default function NoteHeader({
     saveNote({ title: e.target.value });
   };
 
+  const handleVisibilityChange = async (value: string) => { 
+    try {
+      const visibility = value === "public" ? true : false;
+
+      await supabase.rpc("update_note_public", {
+        uuid_arg: note.id,
+        session_arg: sessionId,
+        public_arg: visibility
+      });
+      setPublic(visibility)
+
+      await fetch("/revalidate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ slug: note.slug }),
+      });
+      refreshSessionNotes();
+      router.refresh();
+    }  catch (error) {
+      console.error("Update failed:", error);
+    }
+  }
+
   return (
     <>
       {isMobile && pathname !== "/" && (
@@ -59,15 +96,23 @@ export default function NoteHeader({
       <div className="px-2 bg-[#1c1c1c] mb-4 relative">
         <div className="flex justify-center items-center">
           <p className="text-gray-400 text-xs">{formattedDate}</p>
-          {!note.public && (
-            <Badge className="text-xs justify-center items-center ml-2">
-              <Lock className="w-3 h-3 mr-1" />
-              Private
-            </Badge>
-          )}
+          <Select value={isPublic ? "public" : "private"} onValueChange={handleVisibilityChange}>
+            <SelectTrigger className="w-[12px] ml-2 outline-0 border-0 focus:outline-none focus:ring-0 ">
+              {!isPublic && (
+                <Badge className="text-xs justify-center items-center">
+                  <Lock className="w-3 h-3 mr-1" />
+                  Private
+                </Badge>
+              )}
+              </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">Private</SelectItem>
+              <SelectItem value="public">Public</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center relative">
-          {canEdit && !note.public && !isMobile ? (
+          {canEdit && !isPublic && !isMobile ? (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger
@@ -84,7 +129,7 @@ export default function NoteHeader({
           ) : (
             <span className="mr-2">{note.emoji}</span>
           )}
-          {note.public || !canEdit ? (
+          {isPublic || !canEdit ? (
             <span className="text-2xl font-bold flex-grow py-2 leading-normal min-h-[50px]">
               {note.title}
             </span>
@@ -99,7 +144,7 @@ export default function NoteHeader({
             />
           )}
         </div>
-        {showEmojiPicker && !isMobile && !note.public && canEdit && (
+        {showEmojiPicker && !isMobile && !isPublic && canEdit && (
           <div className="absolute top-full left-0 z-10">
             <Picker
               onEmojiSelect={handleEmojiSelect}

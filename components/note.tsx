@@ -72,9 +72,9 @@ export default function Note({ note: initialNote }: { note: any }) {
   const canEdit = sessionId === note.session_id;
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full">
       <SessionId setSessionId={setSessionId} />
-      <NoteHeader note={note} saveNote={saveNote} canEdit={canEdit} />
+      <NoteHeader sessionId={sessionId} note={note} saveNote={saveNote} canEdit={canEdit} />
       <NoteContent note={note} saveNote={saveNote} canEdit={canEdit} />
     </div>
   );
