@@ -78,7 +78,8 @@ export default function Sidebar({
   const notes = useMemo(
     () => {
       const combinedNotes = [...publicNotes, ...sessionNotes]
-      return [...new Map(combinedNotes.map(item => [item["uid"], item])).values()];
+
+      return [...new Map(combinedNotes.map(item => [item["id"], item])).values()];
     },
     [publicNotes, sessionNotes]
   );
