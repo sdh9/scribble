@@ -44,7 +44,7 @@ export default function Sidebar({
   notes: any[];
   onNoteSelect: (note: any) => void;
   isMobile: boolean;
-}) {
+}): JSX.Element {
   const router = useRouter();
   const supabase = createClient();
 
@@ -76,7 +76,10 @@ export default function Sidebar({
   } = useContext(SessionNotesContext);
 
   const notes = useMemo(
-    () => [...publicNotes, ...sessionNotes],
+    () => {
+      const combinedNotes = [...publicNotes, ...sessionNotes]
+      return [...new Map(combinedNotes.map(item => [item["uid"], item])).values()];
+    },
     [publicNotes, sessionNotes]
   );
 

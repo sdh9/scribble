@@ -15,12 +15,6 @@ import { Dispatch, SetStateAction } from "react";
 function previewContent(content: string): string {
   let doc = new DOMParser().parseFromString(content, 'text/html');
   return doc.body.textContent || "";
-  // return content
-  //   .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') 
-  //   .replace(/[#*_~`>+\-]/g, '') 
-  //   .replace(/\n+/g, ' ') 
-  //   .replace(/\s+/g, ' ') 
-  //   .trim();
 }
 
 interface NoteItemProps {
